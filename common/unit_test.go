@@ -3,8 +3,8 @@ package common
 import (
 	"bytes"
 	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/gin-gonic/gin.v1"
 	"net/http"
 	"net/http/httptest"
 	"os"

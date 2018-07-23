@@ -2,13 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+	"time"
 
-	"gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-gonic/gin"
 
 	"github.com/jinzhu/gorm"
-	"github.com/wangzitian0/golang-gin-starter-kit/articles"
-	"github.com/wangzitian0/golang-gin-starter-kit/common"
-	"github.com/wangzitian0/golang-gin-starter-kit/users"
+	"github.com/luxingwen/go-realworld/articles"
+	"github.com/luxingwen/go-realworld/common"
+	"github.com/luxingwen/go-realworld/users"
 )
 
 func Migrate(db *gorm.DB) {
@@ -51,23 +54,23 @@ func main() {
 	// test 1 to 1
 	tx1 := db.Begin()
 	userA := users.UserModel{
-		Username: "AAAAAAAAAAAAAAAA",
-		Email:    "aaaa@g.cn",
-		Bio:      "hehddeda",
+		Username: "shuaishuai",
+		Email:    "sss@g.cn",
+		Bio:      "sss",
 		Image:    nil,
 	}
 	tx1.Save(&userA)
 	tx1.Commit()
 	fmt.Println(userA)
 
-	//db.Save(&ArticleUserModel{
-	//    UserModelID:userA.ID,
-	//})
-	//var userAA ArticleUserModel
-	//db.Where(&ArticleUserModel{
-	//    UserModelID:userA.ID,
-	//}).First(&userAA)
-	//fmt.Println(userAA)
-
-	r.Run() // listen and serve on 0.0.0.0:8080
+	s := &http.Server{
+		Addr:           ":8003",
+		Handler:        r,
+		ReadTimeout:    120 * time.Second,
+		WriteTimeout:   120 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
+	if err := s.ListenAndServe(); err != nil {
+		log.Fatal(err)
+	}
 }

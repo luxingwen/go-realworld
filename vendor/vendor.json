@@ -184,7 +184,7 @@
 		},
 		{
 			"checksumSHA1": "lqXx4OhLBZFV5p4+I0OvpNabF4A=",
-			"path": "gopkg.in/gin-gonic/gin.v1",
+			"path": "github.com/gin-gonic/gin",
 			"revision": "d459835d2b077e44f7c9b453505ee29881d5d12d",
 			"revisionTime": "2017-07-02T09:28:26Z"
 		},
@@ -207,5 +207,5 @@
 			"revisionTime": "2017-07-12T05:45:46Z"
 		}
 	],
-	"rootPath": "github.com/wangzitian0/golang-gin-starter-kit"
+	"rootPath": "github.com/luxingwen/go-realworld"
 }

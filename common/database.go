@@ -3,8 +3,7 @@ package common
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"os"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 type Database struct {
@@ -15,7 +14,7 @@ var DB *gorm.DB
 
 // Opening a database and save the reference to `Database` struct.
 func Init() *gorm.DB {
-	db, err := gorm.Open("sqlite3", "./../gorm.db")
+	db, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/realworld?charset=utf8")
 	if err != nil {
 		fmt.Println("db err: ", err)
 	}
@@ -27,7 +26,7 @@ func Init() *gorm.DB {
 
 // This function will create a temporarily database for running testing cases
 func TestDBInit() *gorm.DB {
-	test_db, err := gorm.Open("sqlite3", "./../gorm_test.db")
+	test_db, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/realworld?charset=utf8")
 	if err != nil {
 		fmt.Println("db err: ", err)
 	}
@@ -35,13 +34,6 @@ func TestDBInit() *gorm.DB {
 	test_db.LogMode(true)
 	DB = test_db
 	return DB
-}
-
-// Delete the database after running testing cases.
-func TestDBFree(test_db *gorm.DB) error {
-	test_db.Close()
-	err := os.Remove("./../gorm_test.db")
-	return err
 }
 
 // Using this function to get a connection, you can create your connection pool here.

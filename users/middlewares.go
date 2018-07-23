@@ -3,8 +3,8 @@ package users
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/dgrijalva/jwt-go/request"
-	"github.com/wangzitian0/golang-gin-starter-kit/common"
-	"gopkg.in/gin-gonic/gin.v1"
+	"github.com/gin-gonic/gin"
+	"github.com/luxingwen/go-realworld/common"
 	"net/http"
 	"strings"
 )
