@@ -31,6 +31,7 @@ func main() {
 
 	r := gin.Default()
 
+	r.Use(common.Cross())
 	v1 := r.Group("/api")
 	users.UsersRegister(v1.Group("/users"))
 	v1.Use(users.AuthMiddleware(false))
