@@ -13,11 +13,11 @@ type ProfileSerializer struct {
 
 // Declare your response schema here
 type ProfileResponse struct {
-	ID        uint    `json:"-"`
-	Username  string  `json:"username"`
-	Bio       string  `json:"bio"`
-	Image     *string `json:"image"`
-	Following bool    `json:"following"`
+	ID        uint   `json:"-"`
+	Username  string `json:"username"`
+	Bio       string `json:"bio"`
+	Image     string `json:"image"`
+	Following bool   `json:"following"`
 }
 
 // Put your response logic including wrap the userModel here.
@@ -30,6 +30,9 @@ func (self *ProfileSerializer) Response() ProfileResponse {
 		Image:     self.Image,
 		Following: myUserModel.isFollowing(self.UserModel),
 	}
+	if profile.Image == "" {
+		profile.Image = "http://luxingwen.github.io/images/git01.jpg"
+	}
 	return profile
 }
 
@@ -38,11 +41,11 @@ type UserSerializer struct {
 }
 
 type UserResponse struct {
-	Username string  `json:"username"`
-	Email    string  `json:"email"`
-	Bio      string  `json:"bio"`
-	Image    *string `json:"image"`
-	Token    string  `json:"token"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Bio      string `json:"bio"`
+	Image    string `json:"image"`
+	Token    string `json:"token"`
 }
 
 func (self *UserSerializer) Response() UserResponse {
@@ -53,6 +56,9 @@ func (self *UserSerializer) Response() UserResponse {
 		Bio:      myUserModel.Bio,
 		Image:    myUserModel.Image,
 		Token:    common.GenToken(myUserModel.ID),
+	}
+	if user.Image == "" {
+		user.Image = "http://luxingwen.github.io/images/git01.jpg"
 	}
 	return user
 }

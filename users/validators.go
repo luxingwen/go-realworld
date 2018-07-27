@@ -11,7 +11,7 @@ import (
 // Then, you can just call model.save() after the data is ready in DataModel.
 type UserModelValidator struct {
 	User struct {
-		Username string `form:"username" json:"username" binding:"exists,alphanum,min=4,max=255"`
+		Username string `form:"username" json:"username" binding:"exists,min=3,max=255"`
 		Email    string `form:"email" json:"email" binding:"exists,email"`
 		Password string `form:"password" json:"password" binding:"exists,min=8,max=255"`
 		Bio      string `form:"bio" json:"bio" binding:"max=1024"`
@@ -36,7 +36,7 @@ func (self *UserModelValidator) Bind(c *gin.Context) error {
 		self.userModel.setPassword(self.User.Password)
 	}
 	if self.User.Image != "" {
-		self.userModel.Image = &self.User.Image
+		self.userModel.Image = self.User.Image
 	}
 	return nil
 }
@@ -55,8 +55,8 @@ func NewUserModelValidatorFillWith(userModel UserModel) UserModelValidator {
 	userModelValidator.User.Bio = userModel.Bio
 	userModelValidator.User.Password = common.NBRandomPassword
 
-	if userModel.Image != nil {
-		userModelValidator.User.Image = *userModel.Image
+	if userModel.Image != "" {
+		userModelValidator.User.Image = userModel.Image
 	}
 	return userModelValidator
 }
@@ -64,7 +64,7 @@ func NewUserModelValidatorFillWith(userModel UserModel) UserModelValidator {
 type LoginValidator struct {
 	User struct {
 		Email    string `form:"email" json:"email" binding:"exists,email"`
-		Password string `form:"password"json:"password" binding:"exists,min=8,max=255"`
+		Password string `form:"password"json:"password" binding:"exists,min=3,max=255"`
 	} `json:"user"`
 	userModel UserModel `json:"-"`
 }
