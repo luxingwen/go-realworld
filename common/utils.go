@@ -10,7 +10,7 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
+	//"github.com/gin-gonic/gin/binding"
 )
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -78,6 +78,7 @@ func NewError(key string, err error) CommonError {
 // I don't want to auto return 400 when error happened.
 // origin function is here: https://github.com/gin-gonic/gin/blob/master/context.go
 func Bind(c *gin.Context, obj interface{}) error {
-	b := binding.Default(c.Request.Method, c.ContentType())
-	return c.ShouldBindWith(obj, b)
+	//fmt.Println("contenttype :", c.ContentType())
+	//b := binding.Default(c.Request.Method, c.ContentType())
+	return c.ShouldBindJSON(obj)
 }

@@ -13,12 +13,12 @@ import (
 //
 // HINT: If you want to split null and "", you should use *string instead of string.
 type UserModel struct {
-	ID           uint    `gorm:"primary_key"`
-	Username     string  `gorm:"column:username"`
-	Email        string  `gorm:"column:email;unique_index"`
-	Bio          string  `gorm:"column:bio;size:1024"`
-	Image        *string `gorm:"column:image"`
-	PasswordHash string  `gorm:"column:password;not null"`
+	ID           uint   `gorm:"primary_key"`
+	Username     string `gorm:"column:username"`
+	Email        string `gorm:"column:email;unique_index"`
+	Bio          string `gorm:"column:bio;size:1024"`
+	Image        string `gorm:"column:image"`
+	PasswordHash string `gorm:"column:password;not null"`
 }
 
 // A hack way to save ManyToMany relationship,

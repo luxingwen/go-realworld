@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/luxingwen/go-realworld/config"
 )
 
 type Database struct {
@@ -14,7 +15,9 @@ var DB *gorm.DB
 
 // Opening a database and save the reference to `Database` struct.
 func Init() *gorm.DB {
-	db, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/realworld?charset=utf8")
+	server := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True", config.MySqlConf.UserName, config.MySqlConf.PassWd, config.MySqlConf.Host, config.MySqlConf.Port, config.MySqlConf.DbName)
+
+	db, err := gorm.Open("mysql", server)
 	if err != nil {
 		fmt.Println("db err: ", err)
 	}
@@ -26,7 +29,8 @@ func Init() *gorm.DB {
 
 // This function will create a temporarily database for running testing cases
 func TestDBInit() *gorm.DB {
-	test_db, err := gorm.Open("mysql", "root:@tcp(127.0.0.1:3306)/realworld?charset=utf8")
+	server := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True", config.MySqlConf.UserName, config.MySqlConf.PassWd, config.MySqlConf.Host, config.MySqlConf.Port, config.MySqlConf.DbName)
+	test_db, err := gorm.Open("mysql", server)
 	if err != nil {
 		fmt.Println("db err: ", err)
 	}
