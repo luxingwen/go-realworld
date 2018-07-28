@@ -2,10 +2,8 @@ package users
 
 import (
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/luxingwen/go-realworld/common"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -72,8 +70,6 @@ func ProfileUnfollow(c *gin.Context) {
 }
 
 func UsersRegistration(c *gin.Context) {
-	b, _ := ioutil.ReadAll(c.Request.Body)
-	fmt.Println(string(b))
 	userModelValidator := NewUserModelValidator()
 	if err := userModelValidator.Bind(c); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, common.NewValidatorError(err))
@@ -89,8 +85,6 @@ func UsersRegistration(c *gin.Context) {
 }
 
 func UsersLogin(c *gin.Context) {
-	b, _ := ioutil.ReadAll(c.Request.Body)
-	fmt.Println("login:", string(b))
 	loginValidator := NewLoginValidator()
 	if err := loginValidator.Bind(c); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, common.NewValidatorError(err))

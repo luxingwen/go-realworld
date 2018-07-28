@@ -1,9 +1,12 @@
 package users
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/luxingwen/go-realworld/common"
+	"github.com/luxingwen/go-realworld/config"
 )
 
 type ProfileSerializer struct {
@@ -32,6 +35,8 @@ func (self *ProfileSerializer) Response() ProfileResponse {
 	}
 	if profile.Image == "" {
 		profile.Image = "http://luxingwen.github.io/images/git01.jpg"
+	} else {
+		profile.Image = getImgUrl(profile.Image)
 	}
 	return profile
 }
@@ -59,6 +64,15 @@ func (self *UserSerializer) Response() UserResponse {
 	}
 	if user.Image == "" {
 		user.Image = "http://luxingwen.github.io/images/git01.jpg"
+	} else {
+		user.Image = getImgUrl(user.Image)
 	}
 	return user
+}
+
+func getImgUrl(urlstr string) string {
+	if strings.Contains(urlstr, "http://") || strings.Contains(urlstr, "https://") {
+		return urlstr
+	}
+	return config.ServerConf.FilePath + urlstr
 }

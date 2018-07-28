@@ -26,3 +26,5 @@ coverage.txt
 bak.*
 front
 public
+apistatic
+go-realworld

@@ -11,6 +11,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/luxingwen/go-realworld/articles"
 	"github.com/luxingwen/go-realworld/common"
+	"github.com/luxingwen/go-realworld/upload"
 	"github.com/luxingwen/go-realworld/users"
 )
 
@@ -32,11 +33,13 @@ func main() {
 	r := gin.Default()
 
 	r.Use(Cors())
+	r.Static("/api/file", "apistatic")
 	v1 := r.Group("/api")
 	users.UsersRegister(v1.Group("/users"))
 	v1.Use(users.AuthMiddleware(false))
 	articles.ArticlesAnonymousRegister(v1.Group("/articles"))
 	articles.TagsAnonymousRegister(v1.Group("/tags"))
+	upload.UploadAvatarRegister(v1.Group("/upload/avatar"))
 
 	v1.Use(users.AuthMiddleware(true))
 	users.UserRegister(v1.Group("/user"))
