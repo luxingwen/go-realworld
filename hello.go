@@ -52,6 +52,11 @@ func main() {
 		})
 	})
 
+	// test mail
+
+	mail1 := common.Mail{Address: "kslamp@qq.com", Name: "kslamp"}
+	common.SendEmail(mail1)
+
 	// test 1 to 1
 	tx1 := db.Begin()
 	userA := users.UserModel{
@@ -75,6 +80,7 @@ func main() {
 	if err := s.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
+
 }
 
 ////// 跨域
