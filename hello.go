@@ -11,6 +11,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/luxingwen/go-realworld/articles"
 	"github.com/luxingwen/go-realworld/common"
+	"github.com/luxingwen/go-realworld/upload"
 	"github.com/luxingwen/go-realworld/users"
 )
 
@@ -21,6 +22,7 @@ func Migrate(db *gorm.DB) {
 	db.AutoMigrate(&articles.FavoriteModel{})
 	db.AutoMigrate(&articles.ArticleUserModel{})
 	db.AutoMigrate(&articles.CommentModel{})
+	db.AutoMigrate(&articles.TypeModel{})
 }
 
 func main() {
@@ -32,11 +34,15 @@ func main() {
 	r := gin.Default()
 
 	r.Use(Cors())
+	r.Static("/api/file", "apistatic")
 	v1 := r.Group("/api")
 	users.UsersRegister(v1.Group("/users"))
 	v1.Use(users.AuthMiddleware(false))
 	articles.ArticlesAnonymousRegister(v1.Group("/articles"))
 	articles.TagsAnonymousRegister(v1.Group("/tags"))
+	articles.TypesAnonymousRegister(v1.Group("/types"))
+	upload.UploadAvatarRegister(v1.Group("/upload/avatar"))
+	users.TopUsersAnonymousRegister(v1.Group("/top_user"))
 
 	v1.Use(users.AuthMiddleware(true))
 	users.UserRegister(v1.Group("/user"))

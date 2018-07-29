@@ -29,6 +29,10 @@ func TagsAnonymousRegister(router *gin.RouterGroup) {
 	router.GET("/", TagList)
 }
 
+func TypesAnonymousRegister(router *gin.RouterGroup) {
+	router.GET("/", TypeList)
+}
+
 func ArticleCreate(c *gin.Context) {
 	articleModelValidator := NewArticleModelValidator()
 	if err := articleModelValidator.Bind(c); err != nil {
@@ -52,7 +56,8 @@ func ArticleList(c *gin.Context) {
 	favorited := c.Query("favorited")
 	limit := c.Query("limit")
 	offset := c.Query("offset")
-	articleModels, modelCount, err := FindManyArticle(tag, author, limit, offset, favorited)
+	typ := c.Query("type")
+	articleModels, modelCount, err := FindManyArticle(tag, author, limit, offset, favorited, typ)
 	if err != nil {
 		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("Invalid param")))
 		return
@@ -212,4 +217,14 @@ func TagList(c *gin.Context) {
 	}
 	serializer := TagsSerializer{c, tagModels}
 	c.JSON(http.StatusOK, gin.H{"tags": serializer.Response()})
+}
+
+func TypeList(c *gin.Context) {
+	typeList, err := getAllTypes()
+	if err != nil {
+		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("没有找到分类信息")))
+		return
+	}
+	serializer := TypesSerializer{c, typeList}
+	c.JSON(http.StatusOK, gin.H{"types": serializer.Response()})
 }

@@ -24,4 +24,7 @@ gorm.db
 coverage.txt
 
 bak.*
+front
 public
+apistatic
+go-realworld

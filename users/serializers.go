@@ -1,9 +1,12 @@
 package users
 
 import (
+	"strings"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/luxingwen/go-realworld/common"
+	"github.com/luxingwen/go-realworld/config"
 )
 
 type ProfileSerializer struct {
@@ -32,6 +35,8 @@ func (self *ProfileSerializer) Response() ProfileResponse {
 	}
 	if profile.Image == "" {
 		profile.Image = "http://luxingwen.github.io/images/git01.jpg"
+	} else {
+		profile.Image = getImgUrl(profile.Image)
 	}
 	return profile
 }
@@ -59,6 +64,48 @@ func (self *UserSerializer) Response() UserResponse {
 	}
 	if user.Image == "" {
 		user.Image = "http://luxingwen.github.io/images/git01.jpg"
+	} else {
+		user.Image = getImgUrl(user.Image)
 	}
 	return user
+}
+
+type TopUserSerializer struct {
+	C    *gin.Context
+	User UserModel
+}
+
+type TopUserResponse struct {
+	Username string `json:"username"`
+	Image    string `json:"image"`
+}
+
+type TopUsersSerializer struct {
+	C     *gin.Context
+	Users []*UserModel
+}
+
+func (this *TopUserSerializer) Response() *TopUserResponse {
+	r := &TopUserResponse{Username: this.User.Username, Image: this.User.Image}
+	if r.Image == "" {
+		r.Image = "http://luxingwen.github.io/images/git01.jpg"
+	} else {
+		r.Image = getImgUrl(r.Image)
+	}
+	return r
+}
+
+func (this *TopUsersSerializer) Response() (r []*TopUserResponse) {
+	for _, item := range this.Users {
+		u := TopUserSerializer{this.C, *item}
+		r = append(r, u.Response())
+	}
+	return
+}
+
+func getImgUrl(urlstr string) string {
+	if strings.Contains(urlstr, "http://") || strings.Contains(urlstr, "https://") {
+		return urlstr
+	}
+	return config.ServerConf.FilePath + urlstr
 }

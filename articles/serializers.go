@@ -29,6 +29,34 @@ func (s *TagsSerializer) Response() []string {
 	return response
 }
 
+type TypeSerializer struct {
+	C *gin.Context
+	TypeModel
+}
+
+type TypesSerializer struct {
+	C     *gin.Context
+	Types []TypeModel
+}
+
+type TypeResponse struct {
+	Id   uint   `json:"id"`
+	Name string `json:"name"`
+}
+
+func (s *TypeSerializer) Response() *TypeResponse {
+	return &TypeResponse{Id: s.TypeModel.ID, Name: s.TypeModel.Name}
+}
+
+func (s *TypesSerializer) Response() []*TypeResponse {
+	response := []*TypeResponse{}
+	for _, tag := range s.Types {
+		serializer := TypeSerializer{s.C, tag}
+		response = append(response, serializer.Response())
+	}
+	return response
+}
+
 type ArticleUserSerializer struct {
 	C *gin.Context
 	ArticleUserModel
@@ -54,6 +82,7 @@ type ArticleResponse struct {
 	UpdatedAt      string                `json:"updatedAt"`
 	Author         users.ProfileResponse `json:"author"`
 	Tags           []string              `json:"tagList"`
+	TypeName       string                `json:"typName"`
 	Favorite       bool                  `json:"favorited"`
 	FavoritesCount uint                  `json:"favoritesCount"`
 }
@@ -72,6 +101,7 @@ func (s *ArticleSerializer) Response() ArticleResponse {
 		Title:       s.Title,
 		Description: s.Description,
 		Body:        s.Body,
+		TypeName:    s.Type.Name,
 		CreatedAt:   s.CreatedAt.UTC().Format("2006-01-02T15:04:05.999Z"),
 		//UpdatedAt:      s.UpdatedAt.UTC().Format(time.RFC3339Nano),
 		UpdatedAt:      s.UpdatedAt.UTC().Format("2006-01-02T15:04:05.999Z"),

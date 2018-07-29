@@ -18,6 +18,8 @@ type ArticleModel struct {
 	AuthorID    uint
 	Tags        []TagModel     `gorm:"many2many:article_tags;"`
 	Comments    []CommentModel `gorm:"ForeignKey:ArticleID"`
+	Type        TypeModel      `gorm:"ForeignKey:TypeId"`
+	TypeId      uint
 }
 
 type ArticleUserModel struct {
@@ -49,6 +51,11 @@ type CommentModel struct {
 	Author    ArticleUserModel
 	AuthorID  uint
 	Body      string `gorm:"size:2048"`
+}
+
+type TypeModel struct {
+	gorm.Model
+	Name string `gorm:"unique_index"`
 }
 
 func GetArticleUserModel(userModel users.UserModel) ArticleUserModel {
@@ -139,7 +146,7 @@ func getAllTags() ([]TagModel, error) {
 	return models, err
 }
 
-func FindManyArticle(tag, author, limit, offset, favorited string) ([]ArticleModel, int, error) {
+func FindManyArticle(tag, author, limit, offset, favorited, typ string) ([]ArticleModel, int, error) {
 	db := common.GetDB()
 	var models []ArticleModel
 	var count int
@@ -188,15 +195,36 @@ func FindManyArticle(tag, author, limit, offset, favorited string) ([]ArticleMod
 				models = append(models, model)
 			}
 		}
+	} else if typ != "" {
+		var typeModel TypeModel
+		err = tx.Model(&TypeModel{}).Where(map[string]interface{}{"name": typ}).First(&typeModel).Error
+		if err == nil {
+			if typeModel.ID != 0 {
+				db = db.Model(&models).Where("`type_id` = ?", typeModel.ID)
+			}
+		}
+		db.Model(&models).Count(&count)
+		db.Offset(offset_int).Limit(limit_int).Find(&models)
 	} else {
 		db.Model(&models).Count(&count)
 		db.Offset(offset_int).Limit(limit_int).Find(&models)
 	}
 
-	for i, _ := range models {
+	types, err := getAllTypes()
+	if err != nil {
+		return models, 0, err
+	}
+	mType := make(map[uint]TypeModel, 0)
+	for _, item := range types {
+		mType[item.ID] = item
+	}
+	for i, item := range models {
 		tx.Model(&models[i]).Related(&models[i].Author, "Author")
 		tx.Model(&models[i].Author).Related(&models[i].Author.UserModel)
 		tx.Model(&models[i]).Related(&models[i].Tags, "Tags")
+		if v, ok := mType[item.TypeId]; ok {
+			item.Type = v
+		}
 	}
 	err = tx.Commit().Error
 	return models, count, err
@@ -266,4 +294,11 @@ func DeleteCommentModel(condition interface{}) error {
 	db := common.GetDB()
 	err := db.Where(condition).Delete(CommentModel{}).Error
 	return err
+}
+
+func getAllTypes() ([]TypeModel, error) {
+	db := common.GetDB()
+	var models []TypeModel
+	err := db.Find(&models).Error
+	return models, err
 }

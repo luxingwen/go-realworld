@@ -13,6 +13,7 @@ type ArticleModelValidator struct {
 		Description string   `form:"description" json:"description" binding:"max=2048"`
 		Body        string   `form:"body" json:"body" binding:"max=2048"`
 		Tags        []string `form:"tagList" json:"tagList"`
+		TypeId      uint     `form:"typeId" json:"typeId"`
 	} `json:"article"`
 	articleModel ArticleModel `json:"-"`
 }
@@ -26,6 +27,7 @@ func NewArticleModelValidatorFillWith(articleModel ArticleModel) ArticleModelVal
 	articleModelValidator.Article.Title = articleModel.Title
 	articleModelValidator.Article.Description = articleModel.Description
 	articleModelValidator.Article.Body = articleModel.Body
+	articleModelValidator.Article.TypeId = articleModel.TypeId
 	for _, tagModel := range articleModel.Tags {
 		articleModelValidator.Article.Tags = append(articleModelValidator.Article.Tags, tagModel.Tag)
 	}
@@ -43,6 +45,7 @@ func (s *ArticleModelValidator) Bind(c *gin.Context) error {
 	s.articleModel.Title = s.Article.Title
 	s.articleModel.Description = s.Article.Description
 	s.articleModel.Body = s.Article.Body
+	s.articleModel.TypeId = s.Article.TypeId
 	s.articleModel.Author = GetArticleUserModel(myUserModel)
 	s.articleModel.setTags(s.Article.Tags)
 	return nil

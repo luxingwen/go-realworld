@@ -13,8 +13,9 @@ var (
 )
 
 type ServerConfig struct {
-	Port    string
-	RunMode string
+	Port     string
+	RunMode  string
+	FilePath string
 }
 
 type MySqlConfig struct {
