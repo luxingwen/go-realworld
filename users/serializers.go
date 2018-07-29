@@ -70,6 +70,39 @@ func (self *UserSerializer) Response() UserResponse {
 	return user
 }
 
+type TopUserSerializer struct {
+	C    *gin.Context
+	User UserModel
+}
+
+type TopUserResponse struct {
+	Username string `json:"username"`
+	Image    string `json:"image"`
+}
+
+type TopUsersSerializer struct {
+	C     *gin.Context
+	Users []*UserModel
+}
+
+func (this *TopUserSerializer) Response() *TopUserResponse {
+	r := &TopUserResponse{Username: this.User.Username, Image: this.User.Image}
+	if r.Image == "" {
+		r.Image = "http://luxingwen.github.io/images/git01.jpg"
+	} else {
+		r.Image = getImgUrl(r.Image)
+	}
+	return r
+}
+
+func (this *TopUsersSerializer) Response() (r []*TopUserResponse) {
+	for _, item := range this.Users {
+		u := TopUserSerializer{this.C, *item}
+		r = append(r, u.Response())
+	}
+	return
+}
+
 func getImgUrl(urlstr string) string {
 	if strings.Contains(urlstr, "http://") || strings.Contains(urlstr, "https://") {
 		return urlstr

@@ -14,7 +14,7 @@ import (
 // HINT: If you want to split null and "", you should use *string instead of string.
 type UserModel struct {
 	ID           uint   `gorm:"primary_key"`
-	Username     string `gorm:"column:username"`
+	Username     string `gorm:"column:username;unique_index"`
 	Email        string `gorm:"column:email;unique_index"`
 	Bio          string `gorm:"column:bio;size:1024"`
 	Image        string `gorm:"column:image"`
@@ -147,4 +147,10 @@ func (u UserModel) GetFollowings() []UserModel {
 	}
 	tx.Commit()
 	return followings
+}
+
+func TopUsers() (r []*UserModel, err error) {
+	db := common.GetDB()
+	err = db.Limit(30).Find(&r).Error
+	return
 }

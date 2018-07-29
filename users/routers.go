@@ -2,9 +2,11 @@ package users
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/luxingwen/go-realworld/common"
 	"net/http"
+	"strings"
 )
 
 func UsersRegister(router *gin.RouterGroup) {
@@ -21,6 +23,10 @@ func ProfileRegister(router *gin.RouterGroup) {
 	router.GET("/:username", ProfileRetrieve)
 	router.POST("/:username/follow", ProfileFollow)
 	router.DELETE("/:username/follow", ProfileUnfollow)
+}
+
+func TopUsersAnonymousRegister(router *gin.RouterGroup) {
+	router.GET("/", GetTopUsers)
 }
 
 func ProfileRetrieve(c *gin.Context) {
@@ -76,6 +82,12 @@ func UsersRegistration(c *gin.Context) {
 		return
 	}
 	if err := SaveOne(&userModelValidator.userModel); err != nil {
+		if strings.Contains(err.Error(), fmt.Sprintf("Duplicate entry '%s'", userModelValidator.userModel.Username)) {
+			err = errors.New("该用户名已经被占用")
+		}
+		if strings.Contains(err.Error(), fmt.Sprintf("Duplicate entry '%s'", userModelValidator.userModel.Email)) {
+			err = errors.New("该邮箱已经被注册")
+		}
 		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
 		return
 	}
@@ -127,4 +139,14 @@ func UserUpdate(c *gin.Context) {
 	UpdateContextUserModel(c, myUserModel.ID)
 	serializer := UserSerializer{c}
 	c.JSON(http.StatusOK, gin.H{"user": serializer.Response()})
+}
+
+func GetTopUsers(c *gin.Context) {
+	users, err := TopUsers()
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		return
+	}
+	serializer := TopUsersSerializer{c, users}
+	c.JSON(http.StatusOK, gin.H{"users": serializer.Response()})
 }

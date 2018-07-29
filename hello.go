@@ -22,6 +22,7 @@ func Migrate(db *gorm.DB) {
 	db.AutoMigrate(&articles.FavoriteModel{})
 	db.AutoMigrate(&articles.ArticleUserModel{})
 	db.AutoMigrate(&articles.CommentModel{})
+	db.AutoMigrate(&articles.TypeModel{})
 }
 
 func main() {
@@ -39,7 +40,9 @@ func main() {
 	v1.Use(users.AuthMiddleware(false))
 	articles.ArticlesAnonymousRegister(v1.Group("/articles"))
 	articles.TagsAnonymousRegister(v1.Group("/tags"))
+	articles.TypesAnonymousRegister(v1.Group("/types"))
 	upload.UploadAvatarRegister(v1.Group("/upload/avatar"))
+	users.TopUsersAnonymousRegister(v1.Group("/top_user"))
 
 	v1.Use(users.AuthMiddleware(true))
 	users.UserRegister(v1.Group("/user"))
