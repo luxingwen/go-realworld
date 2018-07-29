@@ -2,11 +2,12 @@ package articles
 
 import (
 	"errors"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/luxingwen/go-realworld/common"
 	"github.com/luxingwen/go-realworld/users"
-	"net/http"
-	"strconv"
 )
 
 func ArticlesRegister(router *gin.RouterGroup) {
@@ -36,17 +37,17 @@ func TypesAnonymousRegister(router *gin.RouterGroup) {
 func ArticleCreate(c *gin.Context) {
 	articleModelValidator := NewArticleModelValidator()
 	if err := articleModelValidator.Bind(c); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewValidatorError(err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	//fmt.Println(articleModelValidator.articleModel.Author.UserModel)
 
 	if err := SaveOne(&articleModelValidator.articleModel); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	serializer := ArticleSerializer{c, articleModelValidator.articleModel}
-	c.JSON(http.StatusCreated, gin.H{"article": serializer.Response()})
+	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
 func ArticleList(c *gin.Context) {
@@ -59,11 +60,11 @@ func ArticleList(c *gin.Context) {
 	typ := c.Query("type")
 	articleModels, modelCount, err := FindManyArticle(tag, author, limit, offset, favorited, typ)
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("Invalid param")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	serializer := ArticlesSerializer{c, articleModels}
-	c.JSON(http.StatusOK, gin.H{"articles": serializer.Response(), "articlesCount": modelCount})
+	common.HandleOk(c, gin.H{"articles": serializer.Response(), "articlesCount": modelCount})
 }
 
 func ArticleFeed(c *gin.Context) {
@@ -77,11 +78,11 @@ func ArticleFeed(c *gin.Context) {
 	articleUserModel := GetArticleUserModel(myUserModel)
 	articleModels, modelCount, err := articleUserModel.GetArticleFeed(limit, offset)
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("Invalid param")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	serializer := ArticlesSerializer{c, articleModels}
-	c.JSON(http.StatusOK, gin.H{"articles": serializer.Response(), "articlesCount": modelCount})
+	common.HandleOk(c, gin.H{"articles": serializer.Response(), "articlesCount": modelCount})
 }
 
 func ArticleRetrieve(c *gin.Context) {
@@ -92,139 +93,139 @@ func ArticleRetrieve(c *gin.Context) {
 	}
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("Invalid slug")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	serializer := ArticleSerializer{c, articleModel}
-	c.JSON(http.StatusOK, gin.H{"article": serializer.Response()})
+	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
 func ArticleUpdate(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("Invalid slug")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	articleModelValidator := NewArticleModelValidatorFillWith(articleModel)
 	if err := articleModelValidator.Bind(c); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewValidatorError(err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 
 	articleModelValidator.articleModel.ID = articleModel.ID
 	if err := articleModel.Update(articleModelValidator.articleModel); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	serializer := ArticleSerializer{c, articleModel}
-	c.JSON(http.StatusOK, gin.H{"article": serializer.Response()})
+	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
 func ArticleDelete(c *gin.Context) {
 	slug := c.Param("slug")
 	err := DeleteArticleModel(&ArticleModel{Slug: slug})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("Invalid slug")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"article": "Delete success"})
+	common.HandleOk(c, gin.H{"article": "Delete success"})
 }
 
 func ArticleFavorite(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("Invalid slug")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	myUserModel := c.MustGet("my_user_model").(users.UserModel)
 	err = articleModel.favoriteBy(GetArticleUserModel(myUserModel))
 	serializer := ArticleSerializer{c, articleModel}
-	c.JSON(http.StatusOK, gin.H{"article": serializer.Response()})
+	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
 func ArticleUnfavorite(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("Invalid slug")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	myUserModel := c.MustGet("my_user_model").(users.UserModel)
 	err = articleModel.unFavoriteBy(GetArticleUserModel(myUserModel))
 	serializer := ArticleSerializer{c, articleModel}
-	c.JSON(http.StatusOK, gin.H{"article": serializer.Response()})
+	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
 func ArticleCommentCreate(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("comment", errors.New("Invalid slug")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	commentModelValidator := NewCommentModelValidator()
 	if err := commentModelValidator.Bind(c); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewValidatorError(err))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	commentModelValidator.commentModel.Article = articleModel
 
 	if err := SaveOne(&commentModelValidator.commentModel); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	serializer := CommentSerializer{c, commentModelValidator.commentModel}
-	c.JSON(http.StatusCreated, gin.H{"comment": serializer.Response()})
+	common.HandleOk(c, gin.H{"comment": serializer.Response()})
 }
 
 func ArticleCommentDelete(c *gin.Context) {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	id := uint(id64)
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("comment", errors.New("Invalid id")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	err = DeleteCommentModel([]uint{id})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("comment", errors.New("Invalid id")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"comment": "Delete success"})
+	common.HandleOk(c, gin.H{"comment": "Delete success"})
 }
 
 func ArticleCommentList(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("comments", errors.New("Invalid slug")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	err = articleModel.getComments()
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("comments", errors.New("Database error")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	serializer := CommentsSerializer{c, articleModel.Comments}
-	c.JSON(http.StatusOK, gin.H{"comments": serializer.Response()})
+	common.HandleOk(c, gin.H{"comments": serializer.Response()})
 }
 func TagList(c *gin.Context) {
 	tagModels, err := getAllTags()
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("Invalid param")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	serializer := TagsSerializer{c, tagModels}
-	c.JSON(http.StatusOK, gin.H{"tags": serializer.Response()})
+	common.HandleOk(c, gin.H{"tags": serializer.Response()})
 }
 
 func TypeList(c *gin.Context) {
 	typeList, err := getAllTypes()
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("articles", errors.New("没有找到分类信息")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	serializer := TypesSerializer{c, typeList}
-	c.JSON(http.StatusOK, gin.H{"types": serializer.Response()})
+	common.HandleOk(c, gin.H{"types": serializer.Response()})
 }

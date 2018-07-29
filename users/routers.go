@@ -3,10 +3,11 @@ package users
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/luxingwen/go-realworld/common"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/luxingwen/go-realworld/common"
 )
 
 func UsersRegister(router *gin.RouterGroup) {
@@ -33,52 +34,52 @@ func ProfileRetrieve(c *gin.Context) {
 	username := c.Param("username")
 	userModel, err := FindOneUser(&UserModel{Username: username})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("profile", errors.New("Invalid username")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	profileSerializer := ProfileSerializer{c, userModel}
-	c.JSON(http.StatusOK, gin.H{"profile": profileSerializer.Response()})
+	common.HandleOk(c, gin.H{"profile": profileSerializer.Response()})
 }
 
 func ProfileFollow(c *gin.Context) {
 	username := c.Param("username")
 	userModel, err := FindOneUser(&UserModel{Username: username})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("profile", errors.New("Invalid username")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	myUserModel := c.MustGet("my_user_model").(UserModel)
 	err = myUserModel.following(userModel)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	serializer := ProfileSerializer{c, userModel}
-	c.JSON(http.StatusOK, gin.H{"profile": serializer.Response()})
+	common.HandleOk(c, gin.H{"profile": serializer.Response()})
 }
 
 func ProfileUnfollow(c *gin.Context) {
 	username := c.Param("username")
 	userModel, err := FindOneUser(&UserModel{Username: username})
 	if err != nil {
-		c.JSON(http.StatusNotFound, common.NewError("profile", errors.New("Invalid username")))
+		common.HandleErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 	myUserModel := c.MustGet("my_user_model").(UserModel)
 
 	err = myUserModel.unFollowing(userModel)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	serializer := ProfileSerializer{c, userModel}
-	c.JSON(http.StatusOK, gin.H{"profile": serializer.Response()})
+	common.HandleOk(c, gin.H{"profile": serializer.Response()})
 }
 
 func UsersRegistration(c *gin.Context) {
 	userModelValidator := NewUserModelValidator()
 	if err := userModelValidator.Bind(c); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewValidatorError(err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	if err := SaveOne(&userModelValidator.userModel); err != nil {
@@ -88,65 +89,65 @@ func UsersRegistration(c *gin.Context) {
 		if strings.Contains(err.Error(), fmt.Sprintf("Duplicate entry '%s'", userModelValidator.userModel.Email)) {
 			err = errors.New("该邮箱已经被注册")
 		}
-		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	c.Set("my_user_model", userModelValidator.userModel)
 	serializer := UserSerializer{c}
-	c.JSON(http.StatusCreated, gin.H{"user": serializer.Response()})
+	common.HandleOk(c, gin.H{"user": serializer.Response()})
 }
 
 func UsersLogin(c *gin.Context) {
 	loginValidator := NewLoginValidator()
 	if err := loginValidator.Bind(c); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewValidatorError(err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	userModel, err := FindOneUser(&UserModel{Email: loginValidator.userModel.Email})
 
 	if err != nil {
-		c.JSON(http.StatusForbidden, common.NewError("login", errors.New("Not Registered email or invalid password")))
+		common.HandleErr(c, http.StatusForbidden, err.Error())
 		return
 	}
 
 	if userModel.checkPassword(loginValidator.User.Password) != nil {
-		c.JSON(http.StatusForbidden, common.NewError("login", errors.New("Not Registered email or invalid password")))
+		common.HandleErr(c, http.StatusForbidden, err.Error())
 		return
 	}
 	UpdateContextUserModel(c, userModel.ID)
 	serializer := UserSerializer{c}
-	c.JSON(http.StatusOK, gin.H{"user": serializer.Response()})
+	common.HandleOk(c, gin.H{"user": serializer.Response()})
 }
 
 func UserRetrieve(c *gin.Context) {
 	serializer := UserSerializer{c}
-	c.JSON(http.StatusOK, gin.H{"user": serializer.Response()})
+	common.HandleOk(c, gin.H{"user": serializer.Response()})
 }
 
 func UserUpdate(c *gin.Context) {
 	myUserModel := c.MustGet("my_user_model").(UserModel)
 	userModelValidator := NewUserModelValidatorFillWith(myUserModel)
 	if err := userModelValidator.Bind(c); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewValidatorError(err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 
 	userModelValidator.userModel.ID = myUserModel.ID
 	if err := myUserModel.Update(userModelValidator.userModel); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	UpdateContextUserModel(c, myUserModel.ID)
 	serializer := UserSerializer{c}
-	c.JSON(http.StatusOK, gin.H{"user": serializer.Response()})
+	common.HandleOk(c, gin.H{"user": serializer.Response()})
 }
 
 func GetTopUsers(c *gin.Context) {
 	users, err := TopUsers()
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, common.NewError("database", err))
+		common.HandleErr(c, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
 	serializer := TopUsersSerializer{c, users}
-	c.JSON(http.StatusOK, gin.H{"users": serializer.Response()})
+	common.HandleOk(c, gin.H{"users": serializer.Response()})
 }
