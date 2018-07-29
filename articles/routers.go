@@ -1,7 +1,6 @@
 package articles
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -72,7 +71,7 @@ func ArticleFeed(c *gin.Context) {
 	offset := c.Query("offset")
 	myUserModel := c.MustGet("my_user_model").(users.UserModel)
 	if myUserModel.ID == 0 {
-		c.AbortWithError(http.StatusUnauthorized, errors.New("{error : \"Require auth!\"}"))
+		common.HandleErr(c, http.StatusUnauthorized, "Require auth!")
 		return
 	}
 	articleUserModel := GetArticleUserModel(myUserModel)
