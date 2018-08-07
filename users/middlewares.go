@@ -48,15 +48,31 @@ func UpdateContextUserModel(c *gin.Context, my_user_id uint) {
 func AuthMiddleware(auto401 bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		UpdateContextUserModel(c, 0)
-		token, err := request.ParseFromRequest(c.Request, MyAuth2Extractor, func(token *jwt.Token) (interface{}, error) {
-			b := ([]byte(common.NBSecretPassword))
-			return b, nil
-		})
-		if err != nil {
-			if auto401 {
-				c.AbortWithError(http.StatusUnauthorized, err)
+		tokenStr := ""
+		if cookie, err := c.Request.Cookie("token"); err == nil {
+			tokenStr = cookie.Value
+		}
+		var (
+			err   error
+			token *jwt.Token
+		)
+		if tokenStr != "" {
+			token, err = jwt.ParseWithClaims(tokenStr, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+				b := ([]byte(common.NBSecretPassword))
+				return b, nil
+			})
+		}
+		if token == nil {
+			token, err = request.ParseFromRequest(c.Request, MyAuth2Extractor, func(token *jwt.Token) (interface{}, error) {
+				b := ([]byte(common.NBSecretPassword))
+				return b, nil
+			})
+			if err != nil {
+				if auto401 {
+					c.AbortWithError(http.StatusUnauthorized, err)
+				}
+				return
 			}
-			return
 		}
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			my_user_id := uint(claims["id"].(float64))

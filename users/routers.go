@@ -30,6 +30,12 @@ func TopUsersAnonymousRegister(router *gin.RouterGroup) {
 	router.GET("/", GetTopUsers)
 }
 
+// GetAll ...
+// @Title 获取用户信息
+// @Description 获取用户信息
+// @Param   username  path 	string	true		"username"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/profiles/{username} [get]
 func ProfileRetrieve(c *gin.Context) {
 	username := c.Param("username")
 	userModel, err := FindOneUser(&UserModel{Username: username})
@@ -41,6 +47,11 @@ func ProfileRetrieve(c *gin.Context) {
 	common.HandleOk(c, gin.H{"profile": profileSerializer.Response()})
 }
 
+// GetAll ...
+// @Title 关注用户
+// @Description 关注用户
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/profiles/{username}/follow [post]
 func ProfileFollow(c *gin.Context) {
 	username := c.Param("username")
 	userModel, err := FindOneUser(&UserModel{Username: username})
@@ -58,6 +69,12 @@ func ProfileFollow(c *gin.Context) {
 	common.HandleOk(c, gin.H{"profile": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 取消关注用户
+// @Description 取消关注用户
+// @Param   username  path 	string	true		"username"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/users/{username}/follow [delete]
 func ProfileUnfollow(c *gin.Context) {
 	username := c.Param("username")
 	userModel, err := FindOneUser(&UserModel{Username: username})
@@ -76,6 +93,12 @@ func ProfileUnfollow(c *gin.Context) {
 	common.HandleOk(c, gin.H{"profile": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 注册用户
+// @Description 注册用户
+// @Param	body	body 	users.UserModelValidator	true		"body for Culture content"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/users/ [post]
 func UsersRegistration(c *gin.Context) {
 	userModelValidator := NewUserModelValidator()
 	if err := userModelValidator.Bind(c); err != nil {
@@ -97,6 +120,12 @@ func UsersRegistration(c *gin.Context) {
 	common.HandleOk(c, gin.H{"user": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 用户登录
+// @Description 用户登录
+// @Param	body	body 	users.LoginValidator	true		"body for Culture content"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/users/login [post]
 func UsersLogin(c *gin.Context) {
 	loginValidator := NewLoginValidator()
 	if err := loginValidator.Bind(c); err != nil {
@@ -106,24 +135,38 @@ func UsersLogin(c *gin.Context) {
 	userModel, err := FindOneUser(&UserModel{Email: loginValidator.userModel.Email})
 
 	if err != nil {
-		common.HandleErr(c, http.StatusForbidden, err.Error())
+		http.SetCookie(c.Writer, getCookie(""))
+		common.HandleErr(c, http.StatusForbidden, "用户名或密码不对")
 		return
 	}
 
-	if userModel.checkPassword(loginValidator.User.Password) != nil {
-		common.HandleErr(c, http.StatusForbidden, err.Error())
+	if err = userModel.checkPassword(loginValidator.User.Password); err != nil {
+		http.SetCookie(c.Writer, getCookie(""))
+		common.HandleErr(c, http.StatusForbidden, "用户名或密码不对")
 		return
 	}
 	UpdateContextUserModel(c, userModel.ID)
 	serializer := UserSerializer{c}
+	http.SetCookie(c.Writer, getCookie(serializer.Response().Token))
 	common.HandleOk(c, gin.H{"user": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 获取用户信息
+// @Description 获取用户信息
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/user [get]
 func UserRetrieve(c *gin.Context) {
 	serializer := UserSerializer{c}
 	common.HandleOk(c, gin.H{"user": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 更新用户信息
+// @Description 更新用户信息
+// @Param	body	body 	users.UserModelValidator	true		"body for Culture content"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/user [put]
 func UserUpdate(c *gin.Context) {
 	myUserModel := c.MustGet("my_user_model").(UserModel)
 	userModelValidator := NewUserModelValidatorFillWith(myUserModel)
@@ -150,4 +193,13 @@ func GetTopUsers(c *gin.Context) {
 	}
 	serializer := TopUsersSerializer{c, users}
 	common.HandleOk(c, gin.H{"users": serializer.Response()})
+}
+
+func getCookie(token string) *http.Cookie {
+	return &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
+	}
 }

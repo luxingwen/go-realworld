@@ -7,10 +7,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	"github.com/jinzhu/gorm"
 	"github.com/luxingwen/go-realworld/articles"
 	"github.com/luxingwen/go-realworld/common"
+	_ "github.com/luxingwen/go-realworld/docs"
 	"github.com/luxingwen/go-realworld/upload"
 	"github.com/luxingwen/go-realworld/users"
 )
@@ -35,6 +38,7 @@ func main() {
 
 	r.Use(Cors())
 	r.Static("/api/file", "apistatic")
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	v1 := r.Group("/api")
 	users.UsersRegister(v1.Group("/users"))
 	v1.Use(users.AuthMiddleware(false))

@@ -19,6 +19,7 @@ func ArticlesRegister(router *gin.RouterGroup) {
 	router.DELETE("/:slug/comments/:id", ArticleCommentDelete)
 }
 
+// articles
 func ArticlesAnonymousRegister(router *gin.RouterGroup) {
 	router.GET("/", ArticleList)
 	router.GET("/:slug", ArticleRetrieve)
@@ -33,6 +34,12 @@ func TypesAnonymousRegister(router *gin.RouterGroup) {
 	router.GET("/", TypeList)
 }
 
+// GetAll ...
+// @Title 创建文章
+// @Description 创建文章
+// @Param	body	body 	articles.ArticleModelValidator	true		"body for Culture content"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/ [post]
 func ArticleCreate(c *gin.Context) {
 	articleModelValidator := NewArticleModelValidator()
 	if err := articleModelValidator.Bind(c); err != nil {
@@ -49,6 +56,11 @@ func ArticleCreate(c *gin.Context) {
 	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 获取文章列表
+// @Description 获取文章列表
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/ [get]
 func ArticleList(c *gin.Context) {
 	//condition := ArticleModel{}
 	tag := c.Query("tag")
@@ -84,6 +96,12 @@ func ArticleFeed(c *gin.Context) {
 	common.HandleOk(c, gin.H{"articles": serializer.Response(), "articlesCount": modelCount})
 }
 
+// GetAll ...
+// @Title 获取文章内容
+// @Description 获取文章内容
+// @Param   slug  path 	string	true		"slug"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/{slug} [get]
 func ArticleRetrieve(c *gin.Context) {
 	slug := c.Param("slug")
 	if slug == "feed" {
@@ -99,6 +117,13 @@ func ArticleRetrieve(c *gin.Context) {
 	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 更新文章内容
+// @Description 更新文章内容
+// @Param   slug  path 	string	true		"slug"
+// @Param	body		body 	articles.ArticleModelValidator	true		"body for Culture content"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/{slug} [get]
 func ArticleUpdate(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
@@ -121,6 +146,12 @@ func ArticleUpdate(c *gin.Context) {
 	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 删除文章
+// @Description 删除文章
+// @Param   slug  path 	string	true		"slug"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/{slug} [delete]
 func ArticleDelete(c *gin.Context) {
 	slug := c.Param("slug")
 	err := DeleteArticleModel(&ArticleModel{Slug: slug})
@@ -131,6 +162,12 @@ func ArticleDelete(c *gin.Context) {
 	common.HandleOk(c, gin.H{"article": "Delete success"})
 }
 
+// GetAll ...
+// @Title 喜欢文章
+// @Description 喜欢文章
+// @Param   slug  path 	string	true		"slug"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/{slug}/favorite [post]
 func ArticleFavorite(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
@@ -144,6 +181,12 @@ func ArticleFavorite(c *gin.Context) {
 	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 取消喜欢文章
+// @Description 取消喜欢文章
+// @Param   slug  path 	string	true		"slug"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/{slug}/favorite [delete]
 func ArticleUnfavorite(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
@@ -157,6 +200,13 @@ func ArticleUnfavorite(c *gin.Context) {
 	common.HandleOk(c, gin.H{"article": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 创建评论
+// @Description 创建评论
+// @Param   slug  path 	string	true		"slug"
+// @Param   body  body  articles.CommentModelValidator  true "body"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/{slug}/comments [post]
 func ArticleCommentCreate(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
@@ -179,6 +229,14 @@ func ArticleCommentCreate(c *gin.Context) {
 	common.HandleOk(c, gin.H{"comment": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 删除评论
+// @Description 删除评论
+// @Param   id    path 	string	true		"id"
+// @Param   slug  path 	string	true		"slug"
+// @Param	body		body 	articles.CommentModelValidator	true		"body for Culture content"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/{slug}/comments/{id} [delete]
 func ArticleCommentDelete(c *gin.Context) {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	id := uint(id64)
@@ -194,6 +252,12 @@ func ArticleCommentDelete(c *gin.Context) {
 	common.HandleOk(c, gin.H{"comment": "Delete success"})
 }
 
+// GetAll ...
+// @Title 获取文章评论列表
+// @Description 获取文章评论列表
+// @Param   slug  path 	string	true		"slug"
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/articles/{slug}/comments [get]
 func ArticleCommentList(c *gin.Context) {
 	slug := c.Param("slug")
 	articleModel, err := FindOneArticle(&ArticleModel{Slug: slug})
@@ -209,6 +273,12 @@ func ArticleCommentList(c *gin.Context) {
 	serializer := CommentsSerializer{c, articleModel.Comments}
 	common.HandleOk(c, gin.H{"comments": serializer.Response()})
 }
+
+// GetAll ...
+// @Title 获取标签列表
+// @Description 获取标签（tags）列表
+// @Success 200 {string} json "{"code":0,"data": []string,"msg":"ok"}"
+// @router /api/tags [get]
 func TagList(c *gin.Context) {
 	tagModels, err := getAllTags()
 	if err != nil {
@@ -219,6 +289,11 @@ func TagList(c *gin.Context) {
 	common.HandleOk(c, gin.H{"tags": serializer.Response()})
 }
 
+// GetAll ...
+// @Title 获取话题类型列表
+// @Description 获取话题类型（types）列表
+// @Success 200 {string} json "{"code":0,"data": []*TypeResponse,"msg":"ok"}"
+// @router /api/types [get]
 func TypeList(c *gin.Context) {
 	typeList, err := getAllTypes()
 	if err != nil {

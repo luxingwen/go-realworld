@@ -1,0 +1,309 @@
+definitions:
+  articles.ArticleModelValidator:
+    properties:
+      article:
+        properties:
+          body:
+            type: string
+          description:
+            type: string
+          tagList:
+            items:
+              type: string
+            type: array
+          title:
+            type: string
+          typeId:
+            type: integer
+        type: object
+    type: object
+  articles.CommentModelValidator:
+    properties:
+      comment:
+        properties:
+          body:
+            type: string
+        type: object
+    type: object
+  users.LoginValidator:
+    properties:
+      user:
+        properties:
+          email:
+            type: string
+          password:
+            type: string
+        type: object
+    type: object
+  users.UserModelValidator:
+    properties:
+      user:
+        properties:
+          bio:
+            type: string
+          email:
+            type: string
+          image:
+            type: string
+          password:
+            type: string
+          username:
+            type: string
+        type: object
+    type: object
+info:
+  contact: {}
+  license: {}
+paths:
+  /api/articles/:
+    get:
+      description: 获取文章列表
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+    post:
+      description: 创建文章
+      parameters:
+      - description: body for Culture content
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/articles.ArticleModelValidator'
+          type: object
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/articles/{slug}:
+    delete:
+      description: 删除文章
+      parameters:
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+    get:
+      description: 更新文章内容
+      parameters:
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: body for Culture content
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/articles.ArticleModelValidator'
+          type: object
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/articles/{slug}/comments:
+    get:
+      description: 获取文章评论列表
+      parameters:
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+    post:
+      description: 创建评论
+      parameters:
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/articles.CommentModelValidator'
+          type: object
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/articles/{slug}/comments/{id}:
+    delete:
+      description: 删除评论
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      - description: body for Culture content
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/articles.CommentModelValidator'
+          type: object
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/articles/{slug}/favorite:
+    delete:
+      description: 取消喜欢文章
+      parameters:
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+    post:
+      description: 喜欢文章
+      parameters:
+      - description: slug
+        in: path
+        name: slug
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/profiles/{username}:
+    get:
+      description: 获取用户信息
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/profiles/{username}/follow:
+    post:
+      description: 关注用户
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/tags:
+    get:
+      description: 获取标签（tags）列表
+      responses:
+        "200":
+          description: '{"code":0,"data": []string,"msg":"ok"}'
+          schema:
+            type: string
+  /api/types:
+    get:
+      description: 获取话题类型（types）列表
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/user:
+    get:
+      description: 获取用户信息
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+    put:
+      description: 更新用户信息
+      parameters:
+      - description: body for Culture content
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.UserModelValidator'
+          type: object
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/users/:
+    post:
+      description: 注册用户
+      parameters:
+      - description: body for Culture content
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.UserModelValidator'
+          type: object
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/users/{username}/follow:
+    delete:
+      description: 取消关注用户
+      parameters:
+      - description: username
+        in: path
+        name: username
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+  /api/users/login:
+    post:
+      description: 用户登录
+      parameters:
+      - description: body for Culture content
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/users.LoginValidator'
+          type: object
+      responses:
+        "200":
+          description: '{"code":0,"data": []*TypeResponse,"msg":"ok"}'
+          schema:
+            type: string
+swagger: "2.0"
